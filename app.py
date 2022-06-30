@@ -4,7 +4,7 @@
 #from crypt import methods
 from flask import Flask, request, jsonify
 from flask_migrate import Migrate
-from sqlalchemy import true
+#from sqlalchemy import true
 from models import db, Usuario
 #, Regiones, Provincias, Comunas, Clientes, Suscripciones
 #from models import Donaciones, Descuentos, Productos, Descuentos_Productos, Detalle_Ventas
