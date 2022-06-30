@@ -5,9 +5,10 @@
 from flask import Flask, request, jsonify
 from flask_migrate import Migrate
 from sqlalchemy import true
-from models import db, Usuario, Regiones, Provincias, Comunas, Clientes, Suscripciones
-from models import Donaciones, Descuentos, Productos, Descuentos_Productos, Detalle_Ventas
-from models import Ventas, Vendedores, Despachos
+from models import db, Usuario
+#, Regiones, Provincias, Comunas, Clientes, Suscripciones
+#from models import Donaciones, Descuentos, Productos, Descuentos_Productos, Detalle_Ventas
+#from models import Ventas, Vendedores, Despachos
 from flask_cors import CORS, cross_origin
 
 # 16. jwt seguridad
