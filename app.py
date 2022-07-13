@@ -13,10 +13,10 @@ from flask_cors import CORS, cross_origin
 from datetime import datetime
 
 # 16. jwt seguridad
-#from flask_jwt_extended import create_access_token
-#from flask_jwt_extended import get_jwt_identity
-#from flask_jwt_extended import jwt_required
-#from flask_jwt_extended import JWTManager
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
 
 # 3. instanciamos la app
 app = Flask(__name__)
@@ -27,33 +27,33 @@ app.config['DEBUG'] = False
 app.config['ENV'] = 'development'
 app.config['SQLALCHEMY_TRACK_MODIFICATION'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-#app.config['SQLALCHEMY_ECHO'] = True # para ver los cambios en la base de datos 
+app.config['SQLALCHEMY_ECHO'] = True # para ver los cambios en la base de datos 
 
 # 17. configuracion de seguridad
-#app.config['JWT_SECRET_KEY'] = "secret-key"
-#app.config["JWT_SECRET_KEY"] = "os.environ.get('super-secret')"
-#jwt = JWTManager(app)
+app.config['JWT_SECRET_KEY'] = "secret-key"
+app.config["JWT_SECRET_KEY"] = "os.environ.get('super-secret')"
+jwt = JWTManager(app)
 
 db.init_app(app)
 
 Migrate(app, db)
 
 
-# 18. Ruta de login
-#@app.route("/login", methods=["POST"])
-#def create_token():
-#    email = request.json.get("email")
-#    password = request.json.get("password")
-#
-#    user = Usuario.query.filter(Usuario.email == email, Usuario.password == password).first()
-#
-#    if user == None:
-#        return jsonify({ 
-#            "estado": "error",
-#            "msg": "Error en email o password"}), 401
-#
-#    access_token = create_access_token(identity=email)
-#    return jsonify(access_token=access_token, usuario_id=user.id),200
+ 18. Ruta de login
+@app.route("/login", methods=["POST"])
+def create_token():
+    email = request.json.get("email")
+    password = request.json.get("password")
+
+    user = Usuario.query.filter(Usuario.email == email, Usuario.password == password).first()
+
+    if user == None:
+        return jsonify({ 
+            "estado": "error",
+            "msg": "Error en email o password"}), 401
+
+    access_token = create_access_token(identity=email)
+    return jsonify(access_token=access_token, usuario_id=user.id),200
 
 
 # 5. Creamos la ruta por defecto para saber si mi app esta funcionado
