@@ -1,21 +1,22 @@
 # 0. ejecutamos pip install flask flask-sqlalchemy flask-migrate flask-cors flask-jwt-extended
 # 1. Crear modelos
 # 2. importamos las librerias de flask
-#from crypt import methods
-from flask import Flask, request, jsonify
+from crypt import methods
+from flask import Flask, request, jsonify, session
 from flask_migrate import Migrate
-#from sqlalchemy import true
-from models import db, Usuario
-#, Regiones, Provincias, Comunas, Clientes, Suscripciones
-#from models import Donaciones, Descuentos, Productos, Descuentos_Productos, Detalle_Ventas
-#from models import Ventas, Vendedores, Despachos
+from sqlalchemy import true
+from models import db, Usuario, Regiones, Provincias, Comunas, Clientes, Suscripciones
+from models import Donaciones, Descuentos, Productos, Descuentos_Productos, Detalle_Ventas
+from models import Ventas, Vendedores, Despachos
 from flask_cors import CORS, cross_origin
 
+from datetime import datetime
+
 # 16. jwt seguridad
-#from flask_jwt_extended import create_access_token
-#from flask_jwt_extended import get_jwt_identity
-#from flask_jwt_extended import jwt_required
-#from flask_jwt_extended import JWTManager
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
 
 # 3. instanciamos la app
 app = Flask(__name__)
@@ -26,33 +27,33 @@ app.config['DEBUG'] = False
 app.config['ENV'] = 'development'
 app.config['SQLALCHEMY_TRACK_MODIFICATION'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-app.config['SQLALCHEMY_ECHO'] = True # para ver los cambios en la base de datos 
+#app.config['SQLALCHEMY_ECHO'] = True # para ver los cambios en la base de datos 
 
 # 17. configuracion de seguridad
-#app.config['JWT_SECRET_KEY'] = "secret-key"
-#app.config["JWT_SECRET_KEY"] = "os.environ.get('super-secret')"
-#jwt = JWTManager(app)
+app.config['JWT_SECRET_KEY'] = "secret-key"
+app.config["JWT_SECRET_KEY"] = "os.environ.get('super-secret')"
+jwt = JWTManager(app)
 
 db.init_app(app)
-
+.5
 Migrate(app, db)
 
 
 # 18. Ruta de login
-#@app.route("/login", methods=["POST"])
-#def create_token():
-#    email = request.json.get("email")
-#    password = request.json.get("password")
+@app.route("/login", methods=["POST"])
+def create_token():
+    email = request.json.get("email")
+    password = request.json.get("password")
 
-#    user = Usuario.query.filter(Usuario.email == email, Usuario.password == password).first()
+    user = Usuario.query.filter(Usuario.email == email, Usuario.password == password).first()
 
-#    if user == None:
- #       return jsonify({ 
- #           "estado": "error",
- #           "msg": "Error en email o password"}), 401
+    if user == None:
+        return jsonify({ 
+            "estado": "error",
+            "msg": "Error en email o password"}), 401
 
- #   access_token = create_access_token(identity=email)
- #   return jsonify(access_token=access_token, usuario_id=user.id),200
+    access_token = create_access_token(identity=email)
+    return jsonify(access_token=access_token, usuario_id=user.id),200
 
 
 # 5. Creamos la ruta por defecto para saber si mi app esta funcionado
@@ -123,7 +124,7 @@ def getRegiones():
     regiones = list(map(lambda x: x.serialize(), regiones))
     return jsonify(regiones),200
 
-######## Provincia #########
+######## Provincia #########
 @app.route('/provincias', methods=['GET'])
 def getProvincias():
     provincias = Provincias.query.all()
@@ -137,7 +138,7 @@ def getComunas():
     comunas = list(map(lambda x: x.serialize(), comunas))
     return jsonify(comunas),200
 
-# obtener listado de todas las comunas de la región solicitada
+# obtener listado de todas las comunas de la región solicitada
 @app.route('/regiones/<id>/comunas', methods=['GET'])
 def getComunasByRegion(id):
     #comunas = db.session.query(Comunas).filter(Regiones.id == id).filter(Provincias.region_id == id).filter(Comunas.provincia_id == Provincias.id)
@@ -146,7 +147,7 @@ def getComunasByRegion(id):
     comunas = list(map(lambda x: x.serialize(), comunas))
     return jsonify(comunas),200
 
-######### Clientes #########
+######### Clientes #########
 @app.route('/clientes', methods=['GET'])
 def getClientes():
     clientes = Clientes.query.all()
@@ -157,13 +158,12 @@ def getClientes():
 def addCliente():
     cliente = Clientes()
 
-    cliente.id = request.json.get('id')
     cliente.rut = request.json.get('rut')
     cliente.nombre = request.json.get('nombre')
     cliente.apellido_paterno = request.json.get('apellido_paterno')
     cliente.apellido_materno = request.json.get('apellido_materno')
     cliente.direccion = request.json.get('direccion')
-    cliente.comunas_id = request.json.get('comunas_id')
+    cliente.comuna_id = request.json.get('comunas_id')
     cliente.email = request.json.get('email')
     cliente.password = request.json.get('password')
     cliente.telefono = request.json.get('telefono')
@@ -192,7 +192,7 @@ def updateCliente(id):
     cliente.apellido_paterno = request.json.get('apellido_paterno')
     cliente.apellido_materno = request.json.get('apellido_materno')
     cliente.direccion = request.json.get('direccion')
-    cliente.comunas_id = request.json.get('comunas_id')
+    cliente.comuna_id = request.json.get('comunas_id')
     cliente.email = request.json.get('email')
     cliente.password = request.json.get('password')
     cliente.telefono = request.json.get('telefono')
@@ -212,7 +212,6 @@ def getSuscripciones():
 def addSuscripcion():
     suscripcion = Suscripciones()
 
-    suscripcion.id = request.json.get('id')
     suscripcion.cliente_id = request.json.get('cliente_id')
     suscripcion.fecha_inicio = request.json.get('fecha_inicio')
     suscripcion.fecha_termino = request.json.get('fecha_termino')
@@ -257,7 +256,6 @@ def getDonaciones():
 def addDonacion():
     donacion = Donaciones()
 
-    donacion.id = request.json.get('id')
     donacion.cliente_id = request.json.get('cliente_id')
     donacion.fecha_donacion = request.json.get('fecha_donacion')
     donacion.monto_donacion = request.json.get('monto_donacion')
@@ -306,7 +304,6 @@ def getDescuentos():
 def addDescuento():
     descuento = Descuentos()
 
-    descuento.id = request.json.get('id')
     descuento.nombre = request.json.get('nombre')
     descuento.fecha = request.json.get('fecha')
     descuento.porcentaje = request.json.get('porcentaje')
@@ -351,7 +348,6 @@ def getProductos():
 def addProducto():
     producto = Productos()
 
-    producto.id = request.json.get('id')
     producto.codigo = request.json.get('codigo')
     producto.nombre = request.json.get('nombre')
     producto.valor_venta = request.json.get('valor_venta')
@@ -402,7 +398,6 @@ def getDescuentosProductos():
 def addDescuentosProducto():
     descuentos_producto = Descuentos_Productos()
 
-    descuentos_producto.id = request.json.get('id')
     descuentos_producto.producto_id = request.json.get('producto_id')
     descuentos_producto.descuento_id = request.json.get('descuento_id')
     descuentos_producto.estado = request.json.get('estado')
@@ -445,7 +440,6 @@ def getVendedores():
 def addVendedor():
     vendedor = Vendedores()
 
-    vendedor.id = request.json.get('id')
     vendedor.primer_nombre = request.json.get('primer_nombre')
     vendedor.segundo_nombre = request.json.get('segundo_nombre')
     vendedor.apellido_paterno = request.json.get('apellido_paterno')
@@ -503,13 +497,16 @@ def addVenta():
     venta.id = request.json.get('id')
     venta.vendedor_id = request.json.get('vendedor_id')
     venta.cliente_id = request.json.get('cliente_id')
-    venta.descuento_id = request.json.get('descuento_id')
-    venta.fecha = request.json.get('fecha')
+    venta.descuento = request.json.get('descuento')
+    venta.fecha = datetime.strptime(request.json.get('fecha'), '%Y-%m-%d').date() 
     venta.total = request.json.get('total')
     venta.iva = request.json.get('iva')
     venta.estado = request.json.get('estado')
 
-    Ventas.save(venta)
+    try:
+        Ventas.save(venta)
+    except:
+        return jsonify({'error': 'existe'}),201
 
     return jsonify(venta.serialize()),200
 
@@ -530,7 +527,7 @@ def updateVenta(id):
 
     venta.vendedor_id = request.json.get('vendedor_id')
     venta.cliente_id = request.json.get('cliente_id')
-    venta.descuento_id = request.json.get('descuento_id')
+    venta.descuento = request.json.get('descuento')
     venta.fecha = request.json.get('fecha')
     venta.total = request.json.get('total')
     venta.iva = request.json.get('iva')
@@ -551,7 +548,6 @@ def getDetalleVentas():
 def addDetalleVenta():
     detalle_venta = Detalle_Ventas()
 
-    detalle_venta.id = request.json.get('id')
     detalle_venta.venta_id = request.json.get('venta_id')
     detalle_venta.producto_id = request.json.get('producto_id')
     detalle_venta.cantidad = request.json.get('cantidad')
@@ -573,6 +569,21 @@ def deleteDetalleVenta(id):
     detalle_venta = Detalle_Ventas.query.get(id)
     Detalle_Ventas.delete(detalle_venta)
     return jsonify(detalle_venta.serialize()),200
+
+# Editar detalle_venta segun el id_producto
+@app.route('/detalle_ventas/<id_producto>/<id_venta>', methods=['PUT'])
+def updateDetalleVentaProProducto(id_producto, id_venta):
+    detalle_venta = Detalle_Ventas.query.filter_by(producto_id=id_producto, venta_id=id_venta).first()
+
+    detalle_venta.cantidad = request.json.get('cantidad')
+    detalle_venta.precio = request.json.get('precio')
+    detalle_venta.descuento = request.json.get('descuento')
+    detalle_venta.estado = request.json.get('estado')
+
+    Detalle_Ventas.update(detalle_venta)
+
+    return jsonify(detalle_venta.serialize()),200
+
 
 @app.route('/detalle_ventas/<id>', methods=['PUT'])
 def updateDetalleVenta(id):
@@ -600,7 +611,6 @@ def getDespachos():
 def addDespacho():
     despacho = Despachos()
 
-    despacho.id = request.json.get('id')
     despacho.fecha_entrega = request.json.get('fecha_entrega')
     despacho.hora_entrega = request.json.get('hora_entrega')
     despacho.rut_recibe = request.json.get('rut_recibe')
